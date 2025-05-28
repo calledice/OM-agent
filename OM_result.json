@@ -1,10 +1,10 @@
 {
     "OM_result": {
-        "binary_result": "0000000000000000",
-        "decimal_result": "00000000",
+        "binary_result": "1101101010110110",
+        "decimal_result": "31222312",
         "metadata": {
             "status": "success",
-            "timestamp": "2025-05-28T13:57:47.243404",
+            "timestamp": "2025-05-28T16:11:28.496431",
             "version": "1.0"
         }
     }
