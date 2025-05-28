@@ -1,0 +1,11 @@
+{
+    "OM_result": {
+        "binary_result": "0000000000000000",
+        "decimal_result": "00000000",
+        "metadata": {
+            "status": "success",
+            "timestamp": "2025-05-28T09:50:45.240747",
+            "version": "1.0"
+        }
+    }
+}

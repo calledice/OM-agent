@@ -7,20 +7,22 @@
         "hours": 0,
         "minutes": 13,
         "load_average": [
-          8.5,
-          0.70,
-          0.65
+          0.15,
+          0.10,
+          0.05
         ]
       }
     },
     "hardware": {
       "memory": {
         "total": "61 GiB",
-        "usage": "80%",
+        "used": "18 GiB",
+        "free": "41 GiB",
         "buffers": "2 GiB",
         "swap": {
           "total": "30 GiB",
-          "usage": "91%"
+          "used": "0 GiB",
+          "free": "30 GiB"
         }
       },
       "storage": [
@@ -28,13 +30,17 @@
           "device": "/dev/mmcblk0p1",
           "mount": "/",
           "size": "54 GiB",
-          "usage": "97%"
+          "used": "20 GiB",
+          "available": "32 GiB",
+          "usage": "37%"
         },
         {
           "device": "/dev/nvme0n1",
           "mount": "/data",
           "size": "1.8 TiB",
-          "usage": "91%"
+          "used": "0.2 TiB",
+          "available": "1.5 TiB",
+          "usage": "11%"
         }
       ]
     }

@@ -1,48 +1,42 @@
 {
-    "system_log": {
-        "timestamp": "2025-05-20T15:15:54+08:00",
-        "system": {
-            "uptime": {
-                "days": 218,
-                "hours": 0,
-                "minutes": 13,
-                "load_average": [
-                    8.15,
-                    7.10,
-                    6.05
-                ]
-            }
-        },
-        "hardware": {
-            "memory": {
-                "total": "61 GiB",
-                "used": "58 GiB",
-                "free": "3 GiB",
-                "buffers": "0 GiB",
-                "swap": {
-                    "total": "30 GiB",
-                    "used": "28 GiB",
-                    "free": "2 GiB"
-                }
-            },
-            "storage": [
-                {
-                    "device": "/dev/mmcblk0p1",
-                    "mount": "/",
-                    "size": "54 GiB",
-                    "used": "52 GiB",
-                    "available": "2 GiB",
-                    "usage": "96%"
-                },
-                {
-                    "device": "/dev/nvme0n1",
-                    "mount": "/data",
-                    "size": "1.8 TiB",
-                    "used": "1.7 TiB",
-                    "available": "0.1 TiB",
-                    "usage": "94%"
-                }
-            ]
+  "system_log": {
+    "timestamp": "2025-05-21T15:15:54+08:00",
+    "system": {
+      "uptime": {
+        "days": 218,
+        "hours": 0,
+        "minutes": 13,
+        "load_average": [
+          0.15,
+          0.10,
+          0.05
+        ]
+      }
+    },
+    "hardware": {
+      "memory": {
+        "total": "61 GiB",
+        "usage": "30%",
+        "buffers": "2 GiB",
+        "swap": {
+          "total": "30 GiB",
+          "usage": "0%"
         }
+      },
+      "storage": [
+        {
+          "device": "/dev/mmcblk0p1",
+          "mount": "/",
+          "size": "54 GiB",
+          "usage": "37%"
+        },
+        {
+          "device": "/dev/nvme0n1",
+          "mount": "/data",
+          "size": "1.8 TiB",
+          "usage": "11%"
+        }
+      ]
     }
+  }
 }
