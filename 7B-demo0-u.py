@@ -6,7 +6,9 @@ import os
 import time 
 from typing import Optional 
 """基于正则化表达式和规则引擎的系统诊断工具
-该工具使用llama.cpp或transformers模型提取系统日志数据，更具正则化生成状态码和措施码。"""
+该工具使用llama.cpp或transformers模型提取系统日志数据，更具正则化生成状态码和措施码。
+对于7B-instruct模型和7B-math模型效果都很好
+"""
 
 
  
@@ -372,8 +374,8 @@ def load_llamacpp_model():
     
     print("正在初始化llama.cpp  Qwen模型...")
     return Llama.from_pretrained( 
-        repo_id="mradermacher/Qwen2-Math-7B-GGUF",
-        filename="Qwen2-Math-7B.Q4_K_M.gguf", 
+        repo_id="Qwen/Qwen2-7B-Instruct-GGUF",
+        filename="qwen2-7b-instruct-q4_k_m.gguf", 
         n_gpu_layers=10,
         n_ctx=2048,
         verbose=True,

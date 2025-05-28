@@ -7,7 +7,10 @@ import time
 from typing import Optional 
 from datetime import datetime
  
-"""基于LLM理解的系统诊断工具，LLM读入日志文件中的关键数据，基于prompt对比分析系统状态并生成诊断结果"""
+"""基于LLM理解的系统诊断工具，LLM读入日志文件中的关键数据，基于prompt对比分析系统状态并生成诊断结果
+对于7B-instruct模型效果不好，因为数学能力太弱了
+对于7B-math模型效果都很好（math模型的指令遵循不大好，所以需要正则化从回答中提取编码）
+"""
 
 try:
     from llama_cpp import Llama 
@@ -34,11 +37,11 @@ def build_system_prompt(metrics: Dict[str, float]) -> str:
         - Data: {metrics['data_disk']:.1f}%
         
         【状态码规则】
-        A: 3(CPU>8), 2(CPU>3), 1(CPU>1), 0(CPU≤1) 
-        B: 3(OOM/Mem≥99%), 2(Mem≥90%), 1(Mem≥70%), 0(Mem≤70%)
-        C: 2(Swap≥90%), 1(Swap≥70%), 0(Swap<70%)
-        D: 2(Root≥90%), 1(Root≥70%), 0(Root<70%)
-        E: 3(Data≥99%), 2(Data≥90%), 1(Data≥70%), 0(Data≤70%)
+        A: 3(CPU>800), 2(CPU>300), 1(CPU>100), 0(CPU≤100) 
+        B: 3(OOM/Mem≥99), 2(Mem≥90), 1(Mem≥70), 0(Mem≤70)
+        C: 2(Swap≥90), 1(Swap≥70), 0(Swap<70)
+        D: 2(Root≥90), 1(Root≥70), 0(Root<70)
+        E: 3(Data≥99), 2(Data≥90), 1(Data≥70), 0(Data≤70)
 
         【措施码规则】
         X:0(A=0),1(A=1),2(A=2),3(A=3)  
@@ -150,7 +153,7 @@ def preprocess_log_data(log_data: Dict[str, Any]) -> Dict[str, float]:
     """从日志中提取并格式化 CPU、内存、磁盘等指标"""
     # 1. CPU 使用率：用 load_average[0] 近似代替（假设逻辑核心数为 8）
     cpu_cores = 12  # 需根据实际硬件调整 
-    cpu_usage = log_data["system_log"]["system"]["uptime"]["load_average"][0]
+    cpu_usage = log_data["system_log"]["system"]["uptime"]["load_average"]
     
     # 2. 内存和 Swap 
     mem_usage = float(log_data["system_log"]["hardware"]["memory"]["usage"].strip("%"))
@@ -165,15 +168,16 @@ def preprocess_log_data(log_data: Dict[str, Any]) -> Dict[str, float]:
     )
     
     return {
-        "cpu": cpu_usage,
-        "mem": mem_usage,
-        "swap": swap_usage,
-        "root_disk": float(root_disk["usage"].strip("%")),
-        "data_disk": float(data_disk["usage"].strip("%")),
+        "cpu": round(cpu_usage*100), #避免小数比较
+        "mem": round(mem_usage),
+        "swap": round(swap_usage),
+        "root_disk": round(float(root_disk["usage"].strip("%"))),
+        "data_disk": round(float(data_disk["usage"].strip("%"))),
     }
 
 def diagnose_system_llamacpp(llm: 'Llama', user_query: str, log_data: Dict[str, Any]) -> str:
     metrics = preprocess_log_data(log_data)
+    print(metrics)
     prompt = build_system_prompt(metrics)
     
     response = llm.create_chat_completion( 
@@ -271,8 +275,8 @@ def load_llamacpp_model():
     
     print("正在初始化llama.cpp  Qwen模型...")
     return Llama.from_pretrained( 
-        repo_id="mradermacher/Qwen2-Math-7B-GGUF",
-        filename="Qwen2-Math-7B.Q4_K_M.gguf", 
+        repo_id="Qwen/Qwen2-7B-Instruct-GGUF",
+        filename="qwen2-7b-instruct-q4_k_m.gguf", 
         n_gpu_layers=10,
         n_ctx=2048,
         verbose=True,
@@ -303,19 +307,18 @@ def process_diagnosis(diagnosis_text):
     返回:
         dict: 包含原始结果和二进制结果 
     """
-    # 提取结果字符串 
-    pattern = r'(：\d-\d-\d-\d-\d \| \d-\d-\d)'
-    match = re.search(pattern,  diagnosis_text)
-    if not match:
-        return {"error": "未找到有效诊断结果"}
+    # LLM-math时用
+    # # 提取结果字符串 
+    # pattern = r'(：\d-\d-\d-\d-\d \| \d-\d-\d)'
+    # match = re.search(pattern,  diagnosis_text)
+    # if not match:
+    #     return {"error": "未找到有效诊断结果"}
     
-    result_str = match.group(1) 
+    # result_str = match.group(1) 
     
-    # 分割状态码和措施码 
-    # status_part, action_part = result_str.split("|")
-    
-    # 合并所有数字 
-    numbers = re.findall(r'\d',  result_str)
+    # # 合并所有数字 
+    # numbers = re.findall(r'\d',  result_str)
+    numbers = re.findall(r'\d',  diagnosis_text)
     all_digits = list(map(int, numbers))
     
     # 转换为2位二进制 
@@ -368,7 +371,7 @@ if __name__ == "__main__":
         exit(1)
     
     # 示例查询 
-    user_input = "帮我看看2025年5月21日系统的状况。"
+    user_input = "帮我看看2025年5月20日系统的状况。"
     
     # 处理请求 
     process_user_request(qwen_model, tokenizer, user_input)

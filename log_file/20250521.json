@@ -6,11 +6,7 @@
         "days": 218,
         "hours": 0,
         "minutes": 13,
-        "load_average": [
-          0.15,
-          0.10,
-          0.05
-        ]
+        "load_average": 0.15
       }
     },
     "hardware": {
