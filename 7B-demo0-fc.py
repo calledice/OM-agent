@@ -6,7 +6,7 @@ import os
 import time 
 from typing import Optional 
 from datetime import datetime
-from base import save_to_json, process_diagnosis, extract_date_from_query
+from base import save_to_json, process_diagnosis, extract_date_from_query,build_system_prompt
  
 """基于LLM理解的系统诊断工具，LLM读入日志文件中的关键数据，基于prompt对比分析系统状态并生成诊断结果
 对于7B-instruct模型效果不好，因为数学能力太弱了
@@ -28,32 +28,7 @@ except ImportError:
     TRANSFORMERS_AVAILABLE = False 
 
 
-def build_system_prompt(metrics: Dict[str, float]) -> str:
-    return f"""你是一个系统诊断助手，请严格按规则生成状态码和措施码：
- 
-        【当前指标】
-        - CPU: {metrics['cpu']:.1f}
-        - Mem: {metrics['mem']:.1f}%
-        - Swap: {metrics['swap']:.1f}%
-        - Root: {metrics['root_disk']:.1f}%
-        - Data: {metrics['data_disk']:.1f}%
-        
-        【状态码规则】
-        A: 3(CPU>800), 2(CPU>300), 1(CPU>100), 0(CPU≤100) 
-        B: 3(OOM/Mem≥99), 2(Mem≥90), 1(Mem≥70), 0(Mem≤70)
-        C: 2(Swap≥90), 1(Swap≥70), 0(Swap<70)
-        D: 2(Root≥90), 1(Root≥70), 0(Root<70)
-        E: 3(Data≥99), 2(Data≥90), 1(Data≥70), 0(Data≤70)
 
-        【措施码规则】
-        X:0(A=0),1(A=1),2(A=2),3(A=3)  
-        Y:0(B=0),1(B=1),2(B=2),3(B=3)  
-        Z:0(D=0+E=0),1(D≥1|E≥1),2(D≥2|E=2),3(E=3)
-        
-        【输出要求】
-        1. 仅输出一行，格式为：A-B-C-D-E | X-Y-Z
-        2. 示例 1-2-0-3-1 | 1-2-2
-        3. 禁止任何解释！"""
 class SystemDiagnosticTool:
     """系统诊断工具类，负责日志文件的读取和处理"""
     

@@ -5,32 +5,32 @@
       "uptime": {
         "days": 218,
         "hours": 0,
-        "minutes": 13,
-        "load_average": 0.15
+        "minutes": 1,
+        "load_average": 0.5
       }
     },
     "hardware": {
       "memory": {
-        "total": "61 GiB",
-        "usage": "30%",
+        "total": "8 GiB",
+        "usage": "35%",
         "buffers": "2 GiB",
         "swap": {
-          "total": "30 GiB",
-          "usage": "0%"
+          "total": "0 GiB",
+          "usage": "0 %"
         }
       },
       "storage": [
         {
           "device": "/dev/mmcblk0p1",
           "mount": "/",
-          "size": "54 GiB",
-          "usage": "37%"
+          "size": "64 GiB",
+          "usage": "51%"
         },
         {
           "device": "/dev/nvme0n1",
           "mount": "/data",
           "size": "1.8 TiB",
-          "usage": "11%"
+          "usage": "20%"
         }
       ]
     }
