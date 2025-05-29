@@ -134,9 +134,7 @@ if __name__ == "__main__":
 
     # 示例 prompt
     prompts = [
-        "哪些迹象可能表明一个人正在经历焦虑?",
-        "描述一下如何制作芝士披萨。",
-        "写一篇有关5G网络研发的综述文章。"
+        "哪些迹象可能表明一个人正在经历焦虑?"
     ]
 
     results, num_tokens, qps = run_llm_inference(
