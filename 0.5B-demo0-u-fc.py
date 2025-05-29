@@ -5,6 +5,9 @@ import time
 from datetime import datetime 
 from typing import Dict, Any, Optional, Union
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
+from base import save_to_json, process_diagnosis, extract_date_from_query
+import sys 
+
 """
 如果有qwen_agent包，那么可以LLM直接调用封装好的function
 但是由于没有这个包，目前只能LLM用作是否执行function
@@ -213,33 +216,6 @@ class SystemDiagnosticTool:
                 "data": None
                 }
 
-def extract_date_from_query(query: str) -> Optional[str]:
-    """
-    从用户查询中提取日期并格式化为YYYYMMDD 
-    
-    参数:
-        query: 用户输入的查询文本 
-        
-    返回:
-        格式化后的日期字符串或None(如果未找到日期)
-    """
-    # 支持的日期格式 
-    date_patterns = [
-        (r'(\d{4})年(\d{1,2})月(\d{1,2})日', "%Y年%m月%d日"),  # 2025年5月20日 
-        (r'(\d{4})-(\d{1,2})-(\d{1,2})', "%Y-%m-%d"),       # 2025-05-20 
-        (r'(\d{4})/(\d{1,2})/(\d{1,2})', "%Y/%m/%d")        # 2025/05/20 
-    ]
-    
-    for pattern, fmt in date_patterns:
-        match = re.search(pattern,  query)
-        if match:
-            try:
-                date_str = match.group()  
-                dt = datetime.strptime(date_str,  fmt)
-                return dt.strftime("%Y%m%d")    # 统一转为YYYYMMDD格式 
-            except ValueError:
-                continue 
-    return None
 def diagnose_system_transformers(model, tokenizer, user_query: str, log_data: Dict[str, Any]) -> str:
     """
     使用Transformers模型分析日志数据（基于规则引擎）
@@ -278,59 +254,9 @@ def diagnose_system_transformers(model, tokenizer, user_query: str, log_data: Di
     except Exception as e:
         print(f"规则引擎执行失败: {str(e)}")
         return "0-0-0-0-0 | 0-0-0"  # 默认安全值 
-def process_diagnosis(diagnosis_text):
-    """ 
-    处理诊断文本并生成二进制结果 
-    
-    参数:
-        diagnosis_text (str): 诊断文本内容 
-        
-    返回:
-        dict: 包含原始结果和二进制结果 
-    """
-
-    
-    result_str = diagnosis_text
-    
-    # 分割状态码和措施码 
-    # status_part, action_part = result_str.split("|")
-    
-    # 合并所有数字 
-    numbers = re.findall(r'\d',  result_str)
-    all_digits = list(map(int, numbers))
-    
-    # 转换为2位二进制 
-    binary_parts = [f"{digit:02b}" for digit in all_digits]
-    binary_str = ''.join(binary_parts)
-    decimal_str = ''.join(numbers)
-    
-    return {
-        "decimal_result": decimal_str,
-        "binary_parts": binary_parts,
-        "binary_result": binary_str 
-    }   
-
-def save_to_json(data, filename="OM_result.json"): 
-    """将结果保存到JSON文件（嵌套在OM_result键下）"""
-    # 将原始数据嵌套在OM_result下 
-    wrapped_data = {
-        "OM_result": {
-            "binary_result": data["binary_result"],
-            "decimal_result": data["decimal_result"],  # 原始数据 
-            "metadata": {
-                "status": "success",
-                "timestamp": datetime.now().isoformat(), 
-                "version": "1.0"
-            }
-        }
-    }
-    
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(wrapped_data,  f, ensure_ascii=False, indent=4)
-
 
         
-def main():
+def main(user_input):
     # 加载 Qwen 模型 
     model_name = "Qwen/Qwen2-0.5B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name) 
@@ -356,13 +282,12 @@ def main():
         # 4. 输出结果 
         print("\n系统诊断报告:")
         print(diagnosis)
+
+        temp = process_diagnosis(diagnosis)
+        save_to_json(temp) 
  
-        save_to_json(process_diagnosis(diagnosis), f"OM_result.json") 
- 
-        return process_diagnosis(diagnosis)["decimal_result"]
-    
-    # 用户输入 
-    user_input = "帮我看看2025年5月20日系统的状况。"
+        return temp["decimal_result"]
+
     
     # 构造提示词 
     prompt = f"""
@@ -370,7 +295,7 @@ def main():
     - diagnostics: 检查系统在指定日期的状况 
     
     用户输入：{user_input}
-    请判断是否需要检查系统状况，并返回合适的响应。
+    请判断是否需要检查系统状况，如果需要，只回答需要检查或需要用到diagnostics来检查系统。
     """
     
     # 生成回复 
@@ -386,10 +311,27 @@ def main():
     else:
         print(response)
  
-if __name__ == "__main__":
+if __name__ == "__main__": 
     start_time = time.time()  
-    
-    main()
-    
+ 
+    # # 检查命令行参数 
+    # if len(sys.argv)  > 1: 
+    #     try: 
+    #         xxx = int(sys.argv[1])  
+    #         if xxx == 0: 
+    #             user_input = "帮我看看2025年5月21日系统的状况。" 
+    #         elif xxx == 1: 
+    #             user_input = "帮我看看2025年5月20日系统的状况。" 
+    #         else: 
+    #             user_input = "你好" 
+    #     except ValueError: 
+    #         print("输入的参数不是有效的整数，请输入一个整数作为参数。") 
+    #         sys.exit(1)  
+    # else: 
+    #     print("请在运行脚本时提供一个整数参数。") 
+    #     sys.exit(1)  
+    user_input = "帮我看看2025年5月20日系统的状况。" 
+    main(user_input) 
+ 
     elapsed_time = (time.time()  - start_time) / 60 
-    print(f"代码运行时间: {elapsed_time:.2f}min")
+    print(f"代码运行时间: {elapsed_time:.2f}min") 

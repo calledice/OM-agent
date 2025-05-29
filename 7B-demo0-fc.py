@@ -11,6 +11,7 @@ from base import save_to_json, process_diagnosis, extract_date_from_query
 """基于LLM理解的系统诊断工具，LLM读入日志文件中的关键数据，基于prompt对比分析系统状态并生成诊断结果
 对于7B-instruct模型效果不好，因为数学能力太弱了
 对于7B-math模型效果都很好（math模型的指令遵循不大好，所以需要正则化从回答中提取编码）
+将功能集成到一个函数中
 """
 
 try:
@@ -98,30 +99,8 @@ class SystemDiagnosticTool:
                 "message": f"读取日志时发生错误: {str(e)}",
                 "data": None 
             }
- 
- 
-def setup_tools():
-    """设置function calling的工具描述"""
-    return [
-        {
-            "type": "function",
-            "function": {
-                "name": "retrieve_system_logs",
-                "description": "根据日期检索系统日志数据",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "date": {
-                            "type": "string",
-                            "description": "日志日期，格式为YYYYMMDD",
-                            "format": "date"
-                        }
-                    },
-                    "required": ["date"]
-                }
-            }
-        }
-    ]
+
+
 
 def preprocess_log_data(log_data: Dict[str, Any]) -> Dict[str, float]:
     """从日志中提取并格式化 CPU、内存、磁盘等指标"""
@@ -180,12 +159,7 @@ def diagnose_system_transformers(model, tokenizer, user_query: str, log_data: Di
     """
     metrics = preprocess_log_data(log_data)
     prompt = build_system_prompt(metrics)
-    messages = [
-        {"role": "system", "content": prompt},
-        {"role": "user", "content": user_query},
-        # {"role": "assistant", "content": f"已获取系统日志数据: {json.dumps(log_data,  ensure_ascii=False)}"}
-    ]
-    
+
     # 生成回复 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device) 
     outputs = model.generate( 
@@ -201,46 +175,6 @@ def diagnose_system_transformers(model, tokenizer, user_query: str, log_data: Di
         response = "0-0-0-0-0 | 0-0-0"  # 默认安全值 
     return response 
  
-def process_user_request(model: Union['Llama', 'AutoModelForCausalLM'], 
-                         tokenizer: Optional['AutoTokenizer'] = None, 
-                         user_query: str = ""):
-    """
-    处理用户请求的完整流程 
-    
-    参数:
-        model: 模型实例 (llama_cpp.Llama 或 transformers.AutoModelForCausalLM)
-        tokenizer: transformers的tokenizer (仅transformers模型需要)
-        user_query: 用户输入的查询 
-    """
-    print(f"\n用户请求: {user_query}")
-    
-    # 1. 提取日期 
-    date_str = extract_date_from_query(user_query)
-    if not date_str:
-        print("错误: 无法从查询中提取有效日期")
-        return 
-    
-    # 2. 读取日志文件 
-    log_result = SystemDiagnosticTool.read_log_file(date_str)  
-    print(log_result["data"])  # 输出日志读取结果
-    if log_result["status"] != "success":
-        print(f"错误: {log_result['message']}")
-        return 
-    
-    # 3. 使用LLM进行诊断 
-    print("\n正在分析系统日志...")
-    if isinstance(model, Llama) and LLAMA_CPP_AVAILABLE:
-        diagnosis = diagnose_system_llamacpp(model, user_query, log_result["data"])
-    elif TRANSFORMERS_AVAILABLE and tokenizer is not None:
-        diagnosis = diagnose_system_transformers(model, tokenizer, user_query, log_result["data"])
-    else:
-        raise RuntimeError("没有可用的模型后端")
-    
-    # 4. 输出结果 
-    print("\n系统诊断报告:")
-    print(diagnosis)
-    
-    save_to_json(process_diagnosis(diagnosis), f"OM_result.json")
  
 def load_llamacpp_model():
     """加载llama.cpp 模型"""
@@ -249,8 +183,8 @@ def load_llamacpp_model():
     
     print("正在初始化llama.cpp  Qwen模型...")
     return Llama.from_pretrained( 
-        repo_id="Qwen/Qwen2-7B-Instruct-GGUF",
-        filename="qwen2-7b-instruct-q4_k_m.gguf", 
+        repo_id="mradermacher/Qwen2-Math-7B-GGUF",  # mradermacher/Qwen2-Math-7B-GGUF  "Qwen/Qwen2-7B-Instruct-GGUF"
+        filename="Qwen2-Math-7B.Q4_K_M.gguf",  # Qwen2-Math-7B.Q4_K_M.gguf  "qwen2-7b-instruct-q4_k_m.gguf"
         n_gpu_layers=10,
         n_ctx=2048,
         verbose=True,
@@ -263,39 +197,110 @@ def load_transformers_model():
         raise ImportError("transformers包未安装")
     
     print("正在加载Qwen2 transformers模型...")
-    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-7B-Instruct") 
+    model_name = "Qwen/Qwen2-7B-Instruct"
+    tokenizer = AutoTokenizer.from_pretrained(model_name) 
     model = AutoModelForCausalLM.from_pretrained( 
-        "Qwen/Qwen2-7B-Instruct",
+        model_name,
         device_map="auto",
         torch_dtype=torch.bfloat16  
     )
     return model, tokenizer 
+
  
- 
-if __name__ == "__main__":
-    start_time = time.time() 
-    
+
+def main():
     # 选择模型后端 
-    MODEL_BACKEND = "llamacpp"  # 可改为 "llamacpp" 或 "transformers"
+    MODEL_BACKEND = "transformers"  # 可改为 "llamacpp" 或 "transformers"
     
     try:
         if MODEL_BACKEND == "llamacpp":
-            qwen_model = load_llamacpp_model()
+            model = load_llamacpp_model()
             tokenizer = None 
         elif MODEL_BACKEND == "transformers":
-            qwen_model, tokenizer = load_transformers_model()
+            model, tokenizer = load_transformers_model()
         else:
             raise ValueError(f"未知的模型后端: {MODEL_BACKEND}")
     except Exception as e:
         print(f"模型加载失败: {str(e)}")
         exit(1)
+
+
+    def diagnostics(user_query: str) -> str:
+        print(f"\n用户请求: {user_query}")
     
-    # 示例查询 
-    user_input = "帮我看看2025年5月20日系统的状况。"
-    
-    # 处理请求 
-    process_user_request(qwen_model, tokenizer, user_input)
+        # 1. 提取日期 
+        date_str = extract_date_from_query(user_query)
+        if not date_str:
+            print("错误: 无法从查询中提取有效日期")
+            return 
+        
+        # 2. 读取日志文件 
+        log_result = SystemDiagnosticTool.read_log_file(date_str)  
+        print(log_result["data"])  # 输出日志读取结果
+        if log_result["status"] != "success":
+            print(f"错误: {log_result['message']}")
+            return 
+        
+        # 3. 使用LLM进行诊断 
+        print("\n正在分析系统日志...")
+        if isinstance(model, Llama) and LLAMA_CPP_AVAILABLE:
+            diagnosis = diagnose_system_llamacpp(model, user_query, log_result["data"])
+        elif TRANSFORMERS_AVAILABLE and tokenizer is not None:
+            diagnosis = diagnose_system_transformers(model, tokenizer, user_query, log_result["data"])
+        else:
+            raise RuntimeError("没有可用的模型后端")
+        
+        # 4. 输出结果 
+        print("\n系统诊断报告:")
+        print(diagnosis)
+        
+        temp = process_diagnosis(diagnosis)
+        save_to_json(temp, f"OM_result.json") 
  
-    end_time = time.time() 
-    elapsed_time = (end_time - start_time) / 60 
+        return temp["decimal_result"]
+    # 用户输入 
+    user_input = "帮我看看2025年5月21日系统的状况。"
+    
+    # 构造提示词 
+    prompt = f"""
+    你是一个智能助手，可以检查系统状况。以下是可用的功能：
+    - diagnostics: 检查系统在指定日期的状况 
+    
+    用户输入：{user_input}
+    请判断是否需要检查系统状况，并返回合适的响应。
+    """
+    
+    # 生成回复 
+    if isinstance(model, Llama) and LLAMA_CPP_AVAILABLE:
+        response = model.create_chat_completion( 
+        messages=[
+            {"role": "system", "content": prompt},
+            # {"role": "user", "content": user_input},
+        ])["choices"][0]["message"]["content"]
+    elif TRANSFORMERS_AVAILABLE and tokenizer is not None:
+        inputs = tokenizer(prompt, return_tensors="pt").to(model.device) 
+        outputs = model.generate( 
+            **inputs,
+            max_new_tokens=100,
+            pad_token_id=tokenizer.eos_token_id  
+        )
+        response = tokenizer.decode(outputs[0][len(inputs.input_ids[0]):],  skip_special_tokens=True)
+    else:
+        raise RuntimeError("没有可用的模型后端")
+    print(response)
+    
+    # 检查是否需要调用诊断功能 
+    if "diagnostics" in response.lower()  or "检查" in response.lower(): 
+        # 直接调用诊断函数 
+        func_response = diagnostics(user_input)
+        print(f"系统状态代码: {func_response}")
+    else:
+        print(response)
+
+if __name__ == "__main__":
+    start_time = time.time()  
+    
+    main()
+    
+    elapsed_time = (time.time()  - start_time) / 60 
     print(f"代码运行时间: {elapsed_time:.2f}min")
