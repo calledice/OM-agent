@@ -6,14 +6,16 @@ from typing import Dict
 
 def save_to_json(data,xxx="00", filename="calc_result.json"): 
     """将结果保存到JSON文件（嵌套在OM_result键下）"""
+    aa = ("10"+xxx+data["binary_result"])
+    bb = int(aa, 2)
     # 将原始数据嵌套在OM_result下 
+
     wrapped_data = {
-            "result": "02"+xxx+data["binary_result"]
+            "result": bb
         }
     
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(wrapped_data,  f, ensure_ascii=False, indent=4)
-
 
 def process_diagnosis(diagnosis_text):
     """ 

@@ -416,43 +416,9 @@ def main(user_input,xxx):
  
 if __name__ == "__main__": 
     start_time = time.time()  
-     # # 对应 .py 0的命令行输入
-    # if len(sys.argv)  > 1: 
-    #     try: 
-    #         xxx = int(sys.argv[1])  
-    #         if xxx == 0: 
-    #             user_input = "帮我看看2025年5月21日系统的状况。" 
-    #         elif xxx == 1: 
-    #             user_input = "帮我看看2025年5月20日系统的状况。" 
-    #         else: 
-    #             user_input = "你好" 
-    #     except ValueError: 
-    #         print("输入的参数不是有效的整数，请输入一个整数作为参数。") 
-    #         sys.exit(1)  
-    # else: 
-    #     print("请在运行脚本时提供一个整数参数。") 
-    #     sys.exit(1)  
-    import argparse 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-qaq',  '--qaq', type=int, choices=[0, 1], help='参数值(0或1)')
-    args = parser.parse_args() 
 
-    # 根据参数设置变量 
-    if args.qaq  is not None:
-        rw = args.qaq 
-        if rw == 0: 
-            xxx="00"
-            user_input = "帮我看看2025年5月21日系统的状况。" 
-        elif rw == 1: 
-            xxx="01"
-            user_input = "帮我看看2025年5月20日系统的状况。" 
-        else:
-            xxx = "00"
-            user_input = "帮我看看2025年5月21日系统的状况。" 
-
-    else: 
-        xxx = "00"
-        user_input = "帮我看看2025年5月21日系统的状况。"  
+    xxx="01"
+    user_input = "帮我看看2025年5月20日系统的状况。" 
 
     main(user_input,xxx) 
  

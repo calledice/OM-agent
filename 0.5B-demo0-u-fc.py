@@ -107,7 +107,7 @@ def main(user_input,xxx):
     model = AutoModelForCausalLM.from_pretrained(model_name,  device_map="auto")
     
     # 定义诊断函数 
-    def diagnostics(user_query: str) -> str:
+    def diagnostics(user_query: str,xxx:str) -> str:
         """检查系统在指定日期的状况"""
         print(f"正在检查系统状况...")
         # 1. 提取日期 
@@ -128,7 +128,8 @@ def main(user_input,xxx):
         print(diagnosis)
 
         temp = process_diagnosis(diagnosis)
-        save_to_json(temp) 
+        print(f"处理后的诊断结果: {temp}")
+        save_to_json(temp,xxx) 
  
         return temp["decimal_result"]
 
@@ -141,7 +142,7 @@ def main(user_input,xxx):
     用户输入：{user_input}
     请判断是否需要检查系统状况，如果需要，只回答需要检查或需要用到diagnostics来检查系统。
     """
-    
+    prompt = [prompt]
     # 生成回复 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device) 
     outputs = model.generate(**inputs,  max_new_tokens=200)
@@ -150,32 +151,35 @@ def main(user_input,xxx):
     # 检查是否需要调用诊断功能 
     if "diagnostics" in response.lower()  or "检查" in response.lower(): 
         # 直接调用诊断函数 
-        func_response = diagnostics(user_input)
+        func_response = diagnostics(user_input,xxx)
         print(f"系统状态代码: {func_response}")
     else:
         print(response)
  
 if __name__ == "__main__": 
     start_time = time.time()  
- 
-    # # 检查命令行参数 
-    # if len(sys.argv)  > 1: 
-    #     try: 
-    #         xxx = int(sys.argv[1])  
-    #         if xxx == 0: 
-    #             user_input = "帮我看看2025年5月21日系统的状况。" 
-    #         elif xxx == 1: 
-    #             user_input = "帮我看看2025年5月20日系统的状况。" 
-    #         else: 
-    #             user_input = "你好" 
-    #     except ValueError: 
-    #         print("输入的参数不是有效的整数，请输入一个整数作为参数。") 
-    #         sys.exit(1)  
-    # else: 
-    #     print("请在运行脚本时提供一个整数参数。") 
-    #     sys.exit(1)  
-    user_input = "帮我看看2025年5月20日系统的状况。" 
-    xxx = "00"
+    import argparse 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-qaq',  '--qaq', type=int, choices=[0, 1], help='参数值(0或1)')
+    args = parser.parse_args() 
+
+    # 根据参数设置变量 
+    if args.qaq  is not None:
+        rw = args.qaq 
+        if rw == 0: 
+            xxx="00"
+            user_input = "帮我看看2025年5月21日系统的状况。" 
+        elif rw == 1: 
+            xxx="01"
+            user_input = "帮我看看2025年5月20日系统的状况。" 
+        else:
+            xxx = "00"
+            user_input = "帮我看看2025年5月21日系统的状况。" 
+
+    else: 
+        xxx = "00"
+        user_input = "帮我看看2025年5月21日系统的状况。"  
+
     main(user_input,xxx) 
  
     elapsed_time = (time.time()  - start_time) / 60 

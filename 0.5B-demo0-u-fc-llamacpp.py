@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, Union
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 import sys 
-from vllm_inference import run_llm_inference
+from llama_cpp_inference import llama_cpp_inference
 
 """
 如果有qwen_agent包，那么可以LLM直接调用封装好的function
@@ -381,7 +381,7 @@ def main(user_input,xxx):
             return "000000"
         # 3. 使用LLM进行诊断 
         print("\n正在分析系统日志...")
-        diagnosis = diagnose_system_transformers(user_query=user_query, log_data=log_result["data"])
+        diagnosis = diagnose_system_transformers(user_query, log_result["data"])
         # 4. 输出结果 
         print("\n系统诊断报告:")
         print(diagnosis)
@@ -394,20 +394,16 @@ def main(user_input,xxx):
         return temp["decimal_result"]
 
     
+    # 构造提示词 
     prompt = f"""
     你是一个智能助手，可以检查系统状况。以下是可用的功能：
     - diagnostics: 检查系统在指定日期的状况 
-    
-    用户输入：{user_input}
-    请判断是否需要检查系统状况，如果需要，只回答需要检查或需要用到diagnostics来检查系统。
+    请根据用户输入，判断是否需要检查系统状况，如果需要，只回答需要检查或需要用到diagnostics来检查系统。
     """
-    prompt = [prompt]
-    response, num_tokens, qps = run_llm_inference(prompt)
-
-    print(response[0]["generated_text"] )
-
+    
+    response = llama_cpp_inference(url = "http://localhost:8080/v1/chat/completions",user_prompt=user_input,system_prompt=prompt)
     # 检查是否需要调用诊断功能 
-    if "diagnostics" in response[0]["generated_text"]  or "检查" in response[0]["generated_text"]: 
+    if "diagnostics" in response["data"]["choices"][0]["message"]["content"] or "检查" in response["data"]["choices"][0]["message"]["content"]: 
         # 直接调用诊断函数 
         func_response = diagnostics(user_input,xxx)
         print(f"系统状态代码: {func_response}")
@@ -416,30 +412,14 @@ def main(user_input,xxx):
  
 if __name__ == "__main__": 
     start_time = time.time()  
-     # # 对应 .py 0的命令行输入
-    # if len(sys.argv)  > 1: 
-    #     try: 
-    #         xxx = int(sys.argv[1])  
-    #         if xxx == 0: 
-    #             user_input = "帮我看看2025年5月21日系统的状况。" 
-    #         elif xxx == 1: 
-    #             user_input = "帮我看看2025年5月20日系统的状况。" 
-    #         else: 
-    #             user_input = "你好" 
-    #     except ValueError: 
-    #         print("输入的参数不是有效的整数，请输入一个整数作为参数。") 
-    #         sys.exit(1)  
-    # else: 
-    #     print("请在运行脚本时提供一个整数参数。") 
-    #     sys.exit(1)  
     import argparse 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-qaq',  '--qaq', type=int, choices=[0, 1], help='参数值(0或1)')
+    parser.add_argument('-qaq',  '--qaqa', type=int, choices=[0, 1], help='参数值(0或1)')
     args = parser.parse_args() 
 
     # 根据参数设置变量 
-    if args.qaq  is not None:
-        rw = args.qaq 
+    if args.qaqa is not None:
+        rw = args.qaqa 
         if rw == 0: 
             xxx="00"
             user_input = "帮我看看2025年5月21日系统的状况。" 
