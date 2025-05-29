@@ -3,11 +3,11 @@ import json
 import re
 from typing import Optional 
 
-def save_to_json(data, filename="calc_result.json"): 
+def save_to_json(data,xxx="00", filename="calc_result.json"): 
     """将结果保存到JSON文件（嵌套在OM_result键下）"""
     # 将原始数据嵌套在OM_result下 
     wrapped_data = {
-            "result": data["binary_result"]
+            "result": "02"+xxx+data["binary_result"]
         }
     
     with open(filename, 'w', encoding='utf-8') as f:

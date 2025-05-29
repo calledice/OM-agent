@@ -256,7 +256,7 @@ def diagnose_system_transformers(model, tokenizer, user_query: str, log_data: Di
         return "0-0-0-0-0 | 0-0-0"  # 默认安全值 
 
         
-def main(user_input):
+def main(user_input,xxx):
     # 加载 Qwen 模型 
     model_name = "Qwen/Qwen2-0.5B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_name) 
@@ -331,7 +331,8 @@ if __name__ == "__main__":
     #     print("请在运行脚本时提供一个整数参数。") 
     #     sys.exit(1)  
     user_input = "帮我看看2025年5月20日系统的状况。" 
-    main(user_input) 
+    xxx = "00"
+    main(user_input,xxx) 
  
     elapsed_time = (time.time()  - start_time) / 60 
     print(f"代码运行时间: {elapsed_time:.2f}min") 
