@@ -398,11 +398,11 @@ def diagnose_system_transformers(user_query: str, log_data: Dict[str, Any]) -> s
     请以严格的JSON格式返回提取结果，只包含数据，不要有任何解释或额外文本。
     """
 
-    metrics = {"cpu_1min": float(log_data["system_log"]["system"]["uptime"]["load_average"]), 
-            "memory_usage": int(log_data["system_log"]["hardware"]["memory"]["usage"].strip('%')), 
-            "swap_usage":  int(log_data["system_log"]["hardware"]["memory"]["swap"]["usage"].strip('%')),
-            "root_disk_usage": int(log_data["system_log"]["hardware"]["storage"][0]["usage"].strip('%')), 
-            "data_disk_usage": int(log_data["system_log"]["hardware"]["storage"][1]["usage"].strip('%'))}
+    metrics = {"cpu_1min": float(log_data["system_log"]["system"]["uptime"]["load_average"][0]), 
+            "memory_usage": float(log_data["system_log"]["hardware"]["memory"]["usage"].strip('%')), 
+            "swap_usage":  float(log_data["system_log"]["hardware"]["memory"]["swap"]["usage"].strip('%')),
+            "root_disk_usage": float(log_data["system_log"]["hardware"]["storage"][0]["usage"].strip('%')), 
+            "data_disk_usage": float(log_data["system_log"]["hardware"]["storage"][1]["usage"].strip('%'))}
     print(f"提取的指标: {metrics}")
     # 3. 使用规则引擎生成状态码和措施码 
     engine = RuleEngine()
@@ -434,7 +434,7 @@ def main(user_input,xxx):
         with open(log_path,  'w') as f:
             json.dump(system_log,  f, indent=4) 
         # 2. 读取日志文件 
-        log_result = SystemDiagnosticTool.read_log_file(log_name)  
+        log_result = SystemDiagnosticTool.read_log_file(log_name)   
         if log_result["status"] != "success":
             print(f"错误: {log_result['message']}")
             return "000000"
@@ -476,8 +476,8 @@ def main(user_input,xxx):
 if __name__ == "__main__": 
     start_time = time.time()  
 
-    xxx="01"
-    user_input = "帮我看看2025年5月20日系统的状况。" 
+    xxx = "10"
+    user_input = "帮我看看系统的状况。"  
 
     main(user_input,xxx) 
  

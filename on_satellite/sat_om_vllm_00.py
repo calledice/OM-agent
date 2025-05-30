@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, Union
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 import sys 
-from llama_cpp_inference import llama_cpp_inference
+from vllm_inference import run_llm_inference
 
 """
 如果有qwen_agent包，那么可以LLM直接调用封装好的function
@@ -18,57 +18,6 @@ import re
 from typing import Optional 
 from typing import Dict
 
-import psutil 
-def get_system_log():
-    # 1. 获取系统启动时间（计算 uptime）
-    boot_time = datetime.fromtimestamp(psutil.boot_time()) 
-    uptime = datetime.now()  - boot_time 
-    uptime_days = uptime.days  
-    uptime_hours, remainder = divmod(uptime.seconds,  3600)
-    uptime_minutes, _ = divmod(remainder, 60)
- 
-    # 2. 获取内存和交换分区信息 
-    mem = psutil.virtual_memory() 
-    swap = psutil.swap_memory() 
- 
-    # 3. 获取磁盘分区信息 
-    disks = []
-    for partition in psutil.disk_partitions(): 
-        usage = psutil.disk_usage(partition.mountpoint) 
-        disks.append({ 
-            "device": partition.device, 
-            "mount": partition.mountpoint, 
-            "size": f"{usage.total  / (1024**3):.1f} GiB",
-            "usage": f"{usage.percent}%" 
-        })
- 
-    # 4. 构建最终的 JSON 结构 
-    log_data = {
-        "system_log": {
-            "timestamp": datetime.now().astimezone().replace(microsecond=0).isoformat(), 
-            "system": {
-                "uptime": {
-                    "days": uptime_days,
-                    "hours": uptime_hours,
-                    "minutes": uptime_minutes,
-                    "load_average": [x / psutil.cpu_count()  for x in psutil.getloadavg()]   # 标准化负载 
-                }
-            },
-            "hardware": {
-                "memory": {
-                    "total": f"{mem.total  / (1024**3):.1f} GiB",
-                    "usage": f"{mem.percent}%", 
-                    "buffers": f"{mem.buffers  / (1024**3):.1f} GiB",
-                    "swap": {
-                        "total": f"{swap.total  / (1024**3):.1f} GiB",
-                        "usage": f"{swap.percent}%" 
-                    }
-                },
-                "storage": disks 
-            }
-        }
-    }
-    return log_data 
 def save_to_json(data,xxx="00", filename="calc_result.json"): 
     """将结果保存到JSON文件（嵌套在OM_result键下）"""
     aa = ("10"+xxx+"000000000000"+data["binary_result"])
@@ -420,26 +369,19 @@ def main(user_input,xxx):
     def diagnostics(user_query: str,xxx:str) -> str:
         """检查系统在指定日期的状况"""
         print(f"正在检查系统状况...")
-        # # 1. 提取日期 
-        # date_str = extract_date_from_query(user_query)
-        # if not date_str:
-        #     print("错误: 无法从查询中提取有效日期")
-        #     return "000000"
-        # 1.获取日志
-        system_log = get_system_log()
-        log_name = "system_log"
-        log_path = './log_file/'+ log_name+".json"
-        print("system_log:", system_log)
-        with open(log_path,  'w') as f:
-            json.dump(system_log,  f, indent=4) 
+        # 1. 提取日期 
+        date_str = extract_date_from_query(user_query)
+        if not date_str:
+            print("错误: 无法从查询中提取有效日期")
+            return "000000"
         # 2. 读取日志文件 
-        log_result = SystemDiagnosticTool.read_log_file(log_name)  
+        log_result = SystemDiagnosticTool.read_log_file(date_str)  
         if log_result["status"] != "success":
             print(f"错误: {log_result['message']}")
             return "000000"
         # 3. 使用LLM进行诊断 
         print("\n正在分析系统日志...")
-        diagnosis = diagnose_system_transformers(user_query, log_result["data"])
+        diagnosis = diagnose_system_transformers(user_query=user_query, log_data=log_result["data"])
         # 4. 输出结果 
         print("\n系统诊断报告:")
         print(diagnosis)
@@ -452,27 +394,28 @@ def main(user_input,xxx):
         return temp["decimal_result"]
 
     
-    # 构造提示词 
     prompt = f"""
     你是一个智能助手，可以检查系统状况。以下是可用的功能：
     - diagnostics: 检查系统在指定日期的状况 
-    请根据用户输入，判断是否需要检查系统状况，如果需要，只回答需要检查或需要用到diagnostics来检查系统。
+    
+    用户输入：{user_input}
+    请判断是否需要检查系统状况，如果需要，只回答需要检查或需要用到diagnostics来检查系统。
     """
+    prompt = [prompt]
+    response, num_tokens, qps = run_llm_inference(prompt)
 
+    print(response[0]["generated_text"] )
 
-    response = llama_cpp_inference(url = "http://localhost:8080/v1/chat/completions",user_prompt=user_input,system_prompt=prompt)
-    print("!!!!!!!!!!!!")
-    print(response)
-   # 检查是否需要调用诊断功能 
-    if "diagnostics" in response["data"]["choices"][0]["message"]["content"] or "检查" in response["data"]["choices"][0]["message"]["content"]: 
+    # 检查是否需要调用诊断功能 
+    if "diagnostics" in response[0]["generated_text"]  or "检查" in response[0]["generated_text"]: 
         # 直接调用诊断函数 
         func_response = diagnostics(user_input,xxx)
         print(f"系统状态代码: {func_response}")
     else:
         print(response)
+ 
 if __name__ == "__main__": 
     start_time = time.time()  
-
 
     xxx = "00"
     user_input = "帮我看看2025年5月21日系统的状况。"  
