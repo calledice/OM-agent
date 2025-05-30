@@ -7,7 +7,9 @@ from typing import Dict
 def save_to_json(data,xxx="00", filename="calc_result.json"): 
     """将结果保存到JSON文件（嵌套在OM_result键下）"""
     aa = ("10"+xxx+"000000000000"+data["binary_result"])
+    print("返回二进制：" + aa)
     bb = int(aa, 2)
+    print("返回十进制：" , bb)
     # 将原始数据嵌套在OM_result下 
     wrapped_data = {
             "result": bb

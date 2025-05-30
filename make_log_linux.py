@@ -53,7 +53,7 @@ def get_system_log():
         }
     }
     return log_data 
- 
-# 生成并打印 JSON 
-system_log = get_system_log()
-print(json.dumps(system_log,  indent=2))
+if __name__ == "__main__":
+    # 直接运行脚本时获取系统日志 
+    system_log = get_system_log()
+    print(json.dumps(system_log, indent=2))

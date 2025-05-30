@@ -1,0 +1,90 @@
+{
+    "system_log": {
+        "timestamp": "2025-05-30T14:24:03+08:00",
+        "system": {
+            "uptime": {
+                "days": 81,
+                "hours": 3,
+                "minutes": 30,
+                "load_average": [
+                    0.009429931640625,
+                    0.008636474609375,
+                    0.0120849609375
+                ]
+            }
+        },
+        "hardware": {
+            "memory": {
+                "total": "187.6 GiB",
+                "usage": "8.8%",
+                "buffers": "2.8 GiB",
+                "swap": {
+                    "total": "8.0 GiB",
+                    "usage": "0.1%"
+                }
+            },
+            "storage": [
+                {
+                    "device": "/dev/mapper/ubuntu--vg-ubuntu--lv",
+                    "mount": "/",
+                    "size": "216.0 GiB",
+                    "usage": "96.3%"
+                },
+                {
+                    "device": "/dev/sda2",
+                    "mount": "/boot",
+                    "size": "1.4 GiB",
+                    "usage": "22.4%"
+                },
+                {
+                    "device": "/dev/sda1",
+                    "mount": "/boot/efi",
+                    "size": "1.0 GiB",
+                    "usage": "0.6%"
+                },
+                {
+                    "device": "/dev/loop1",
+                    "mount": "/snap/lxd/29619",
+                    "size": "0.1 GiB",
+                    "usage": "100.0%"
+                },
+                {
+                    "device": "/dev/loop2",
+                    "mount": "/snap/snapd/23771",
+                    "size": "0.0 GiB",
+                    "usage": "100.0%"
+                },
+                {
+                    "device": "/dev/sdb",
+                    "mount": "/data",
+                    "size": "5320.5 GiB",
+                    "usage": "7.8%"
+                },
+                {
+                    "device": "/dev/loop6",
+                    "mount": "/snap/lxd/32662",
+                    "size": "0.1 GiB",
+                    "usage": "100.0%"
+                },
+                {
+                    "device": "/dev/loop0",
+                    "mount": "/snap/snapd/24505",
+                    "size": "0.0 GiB",
+                    "usage": "100.0%"
+                },
+                {
+                    "device": "/dev/loop3",
+                    "mount": "/snap/core20/2571",
+                    "size": "0.1 GiB",
+                    "usage": "100.0%"
+                },
+                {
+                    "device": "/dev/loop7",
+                    "mount": "/snap/core20/2582",
+                    "size": "0.1 GiB",
+                    "usage": "100.0%"
+                }
+            ]
+        }
+    }
+}

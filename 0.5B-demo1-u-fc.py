@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional, Union
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 from base import save_to_json, process_diagnosis, extract_date_from_query, RuleEngine
 import sys 
-
+from make_log_linux import get_system_log
 """
 如果有qwen_agent包，那么可以LLM直接调用封装好的function
 但是由于没有这个包，目前只能LLM用作是否执行function
@@ -28,7 +28,7 @@ class SystemDiagnosticTool:
         返回:
             包含日志数据和状态的字典 
         """
-        log_path = f"D:\python_code\OM-agent\log_file/{date_str}.json"
+        log_path = f"./log_file/{date_str}.json"
         print("正在读取日志文件:", log_path)
         # 检查文件是否存在 
         if not os.path.exists(log_path):  
@@ -83,11 +83,11 @@ def diagnose_system_transformers(model, tokenizer, user_query: str, log_data: Di
     请以严格的JSON格式返回提取结果，只包含数据，不要有任何解释或额外文本。
     """
 
-    metrics = {"cpu_1min": float(log_data["system_log"]["system"]["uptime"]["load_average"]), 
-            "memory_usage": int(log_data["system_log"]["hardware"]["memory"]["usage"].strip('%')), 
-            "swap_usage":  int(log_data["system_log"]["hardware"]["memory"]["swap"]["usage"].strip('%')),
-            "root_disk_usage": int(log_data["system_log"]["hardware"]["storage"][0]["usage"].strip('%')), 
-            "data_disk_usage": int(log_data["system_log"]["hardware"]["storage"][1]["usage"].strip('%'))}
+    metrics = {"cpu_1min": float(log_data["system_log"]["system"]["uptime"]["load_average"][0]), 
+            "memory_usage": float(log_data["system_log"]["hardware"]["memory"]["usage"].strip('%')), 
+            "swap_usage":  float(log_data["system_log"]["hardware"]["memory"]["swap"]["usage"].strip('%')),
+            "root_disk_usage": float(log_data["system_log"]["hardware"]["storage"][0]["usage"].strip('%')), 
+            "data_disk_usage": float(log_data["system_log"]["hardware"]["storage"][5]["usage"].strip('%'))}
     print(f"提取的指标: {metrics}")
     # 3. 使用规则引擎生成状态码和措施码 
     engine = RuleEngine()
@@ -110,13 +110,21 @@ def main(user_input,xxx):
     def diagnostics(user_query: str,xxx:str) -> str:
         """检查系统在指定日期的状况"""
         print(f"正在检查系统状况...")
-        # 1. 提取日期 
-        date_str = extract_date_from_query(user_query)
-        if not date_str:
-            print("错误: 无法从查询中提取有效日期")
-            return "000000"
-        # 2. 读取日志文件 
-        log_result = SystemDiagnosticTool.read_log_file(date_str)  
+        # # 1. 提取日期 
+        # date_str = extract_date_from_query(user_query)
+        # if not date_str:
+        #     print("错误: 无法从查询中提取有效日期")
+        #     return "000000"
+        # 1.获取日志
+        system_log = get_system_log()
+        log_name = "system_log"
+        log_path = './log_file/'+ log_name+".json"
+        print("system_log:", system_log)
+        with open(log_path,  'w') as f:
+            json.dump(system_log,  f, indent=4) 
+
+        # # 2. 读取日志文件 
+        log_result = SystemDiagnosticTool.read_log_file(log_name)  
         if log_result["status"] != "success":
             print(f"错误: {log_result['message']}")
             return "000000"
@@ -178,7 +186,7 @@ if __name__ == "__main__":
 
     else: 
         xxx = "00"
-        user_input = "帮我看看2025年5月21日系统的状况。"  
+        user_input = "帮我看看现在系统的状况。"  
 
     main(user_input,xxx) 
  
