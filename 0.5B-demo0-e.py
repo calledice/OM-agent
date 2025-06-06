@@ -78,7 +78,7 @@ class SystemDiagnosticTool:
         返回:
             包含日志数据和状态的字典 
         """
-        log_path = f"D:\python_code\OM-agent\log_file/{date_str}.json"
+        log_path = f"./log_file/{date_str}.json"
         print("正在读取日志文件:", log_path)
         # 检查文件是否存在 
         if not os.path.exists(log_path):  
@@ -222,7 +222,7 @@ def process_user_request(model: Union['Llama', 'AutoModelForCausalLM'],
     print(diagnosis)
     # 5.保存
     # process_diagnosis(diagnosis)
-    save_to_json(process_diagnosis(diagnosis), f"OM_result.json")
+    save_to_json(process_diagnosis(diagnosis), f"01")
 
 
 def load_llamacpp_model():
@@ -246,10 +246,11 @@ def load_transformers_model():
         raise ImportError("transformers包未安装")
     
     print("正在加载Qwen2 transformers模型...")
-    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-0.5B-Instruct") 
+    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-1.5B-Instruct") 
     model = AutoModelForCausalLM.from_pretrained( 
-        "Qwen/Qwen2-0.5B-Instruct",
+        "Qwen/Qwen2-1.5B-Instruct",
         device_map="auto",
+        # timeout=120,
         # torch_dtype=torch.bfloat16  
     )
     return model, tokenizer 

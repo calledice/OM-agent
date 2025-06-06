@@ -68,8 +68,6 @@ def binary_to_decimal(binary_str):
 # 输出: 10 
 # aa = decimal_to_binary(626724)
 # print(decimal_to_binary(626724))
-aa = binary_to_decimal("10011001000000100100"+"000000000000")
-print(binary_to_decimal("10011001000000100100"+"000000000000"))  # 输出: 626724
-print(decimal_to_binary(aa))
+print(decimal_to_binary(2147483648))
 
 
