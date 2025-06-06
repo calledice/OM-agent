@@ -488,12 +488,15 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sub_task_id = args.sub_task_id
-    xxx = "00"
+    
     if sub_task_id == 2:
+        xxx = "02"
         user_input = "帮我看看今天系统的状况。"  
     elif sub_task_id ==1:
+        xxx = "01"
         user_input = "帮我看看2025年5月20日系统的状况。"
     else:
+        xxx = "00"
         user_input = "帮我看看2025年5月21日系统的状况。"
 
 
