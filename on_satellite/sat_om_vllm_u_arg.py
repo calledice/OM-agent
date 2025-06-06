@@ -490,7 +490,7 @@ if __name__ == "__main__":
     sub_task_id = args.sub_task_id
     
     if sub_task_id == 2:
-        xxx = "02"
+        xxx = "10"
         user_input = "帮我看看今天系统的状况。"  
     elif sub_task_id ==1:
         xxx = "01"
