@@ -28,7 +28,7 @@ class SystemDiagnosticTool:
         返回:
             包含日志数据和状态的字典 
         """
-        log_path = f"D:\python_code\OM-agent\log_file/{date_str}.json"
+        log_path = f"./log_file/{date_str}.json"
         print("正在读取日志文件:", log_path)
         # 检查文件是否存在 
         if not os.path.exists(log_path):  

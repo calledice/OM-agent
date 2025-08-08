@@ -1,26 +1,22 @@
 {
     "system_log": {
-        "timestamp": "2025-05-30T14:24:03+08:00",
+        "timestamp": "2025-08-06T21:29:24+08:00",
         "system": {
             "uptime": {
-                "days": 81,
-                "hours": 3,
-                "minutes": 30,
-                "load_average": [
-                    0.009429931640625,
-                    0.008636474609375,
-                    0.0120849609375
-                ]
+                "days": 149,
+                "hours": 10,
+                "minutes": 35,
+                "load_average": 0.052103678385416664
             }
         },
         "hardware": {
             "memory": {
                 "total": "187.6 GiB",
-                "usage": "8.8%",
-                "buffers": "2.8 GiB",
+                "usage": "15.2%",
+                "buffers": "3.9 GiB",
                 "swap": {
                     "total": "8.0 GiB",
-                    "usage": "0.1%"
+                    "usage": "9.3%"
                 }
             },
             "storage": [
@@ -28,7 +24,7 @@
                     "device": "/dev/mapper/ubuntu--vg-ubuntu--lv",
                     "mount": "/",
                     "size": "216.0 GiB",
-                    "usage": "96.3%"
+                    "usage": "95.6%"
                 },
                 {
                     "device": "/dev/sda2",
@@ -49,16 +45,10 @@
                     "usage": "100.0%"
                 },
                 {
-                    "device": "/dev/loop2",
-                    "mount": "/snap/snapd/23771",
-                    "size": "0.0 GiB",
-                    "usage": "100.0%"
-                },
-                {
                     "device": "/dev/sdb",
                     "mount": "/data",
                     "size": "5320.5 GiB",
-                    "usage": "7.8%"
+                    "usage": "31.9%"
                 },
                 {
                     "device": "/dev/loop6",
@@ -67,21 +57,27 @@
                     "usage": "100.0%"
                 },
                 {
-                    "device": "/dev/loop0",
-                    "mount": "/snap/snapd/24505",
-                    "size": "0.0 GiB",
+                    "device": "/dev/loop7",
+                    "mount": "/snap/core20/2582",
+                    "size": "0.1 GiB",
+                    "usage": "100.0%"
+                },
+                {
+                    "device": "/dev/loop4",
+                    "mount": "/snap/core20/2599",
+                    "size": "0.1 GiB",
                     "usage": "100.0%"
                 },
                 {
                     "device": "/dev/loop3",
-                    "mount": "/snap/core20/2571",
-                    "size": "0.1 GiB",
+                    "mount": "/snap/snapd/24718",
+                    "size": "0.0 GiB",
                     "usage": "100.0%"
                 },
                 {
-                    "device": "/dev/loop7",
-                    "mount": "/snap/core20/2582",
-                    "size": "0.1 GiB",
+                    "device": "/dev/loop8",
+                    "mount": "/snap/snapd/24792",
+                    "size": "0.0 GiB",
                     "usage": "100.0%"
                 }
             ]
